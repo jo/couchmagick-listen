@@ -115,8 +115,6 @@ module.exports = function couchmagick(url, options) {
 
           options.since = statusDoc.last_seq;
 
-          console.log(statusDoc);
-
           // listen to changes
           db.changes(options).on('data', queue);
         });
