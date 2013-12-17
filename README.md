@@ -34,7 +34,10 @@ See [couchmagick-stream](https://github.com/null2/couchmagick-stream) for availa
 
 Listen for changes:
 ```js
-require('couchmagick-listen')('http://localhost:5984/mydb');
+require('couchmagick-listen')('http://localhost:5984/mydb')
+  .on('data', function(resp) {
+    console.log('Image resized: ', resp);
+  });
 ```
 
 Configuration

@@ -88,9 +88,11 @@ module.exports = function couchmagick(url, options) {
 
   var config = {};
 
-  es.pipeline(
+  return es.pipeline(
+    // kick off
     es.readArray([1]),
 
+    // get config
     es.through(function() {
       var db = nano(url);
       var queue = this.queue;
@@ -106,12 +108,10 @@ module.exports = function couchmagick(url, options) {
       });
     }, noop),
 
+    // parse changes feed
     JSONStream.parse('results.*.doc'),
 
-    magick(url, config),
-
-    es.stringify(),
-
-    process.stdout
+    // run through magick
+    magick(url, config)
   );
 };

@@ -4,4 +4,10 @@ if (!couch) {
   return console.log('Please give me a database url!');
 }
 
-require('..')(couch);
+var es = require('event-stream');
+
+es.pipeline(
+  require('..')(couch),
+  es.stringify(),
+  process.stdout
+);
