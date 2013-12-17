@@ -1,0 +1,34 @@
+{
+  "name": "couchmagick-listen",
+  "version": "1.0.0",
+  "description": "Stream changes to couchmagick-stream.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "jshint": "jshint -c .jshintrc index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/null2/couchmagick-listen"
+  },
+  "keywords": [
+    "couchdb",
+    "imagemagick",
+    "convert",
+    "stream"
+  ],
+  "author": "Johannes J. Schmidt",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/null2/couchmagick-listen/issues"
+  },
+  "devDependencies": {
+    "jshint": "~2.3.0"
+  },
+  "dependencies": {
+    "nano": "~4.2.1",
+    "event-stream": "~3.0.20",
+    "couchmagick-stream": "~1.0.0",
+    "JSONStream": "~0.7.1"
+  }
+}
