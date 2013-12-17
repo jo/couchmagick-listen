@@ -86,7 +86,12 @@ module.exports = function couchmagick(url, options) {
   options = options || {};
   options.include_docs = true;
 
+  var db = nano(url);
   var config = {};
+  var statusDoc = {
+    _id: '_local/couchmagick',
+    last_seq: 0
+  };
 
   return es.pipeline(
     // kick off
@@ -94,9 +99,9 @@ module.exports = function couchmagick(url, options) {
 
     // get config
     es.through(function() {
-      var db = nano(url);
       var queue = this.queue;
 
+      // get configuration
       getConfig(db, function(err, data) {
         if (err || !data) {
           return queue(null);
@@ -104,14 +109,34 @@ module.exports = function couchmagick(url, options) {
 
         util._extend(config, data);
 
-        db.changes(options).on('data', queue);
+        // request status doc
+        db.get(statusDoc._id, function(err, doc) {
+          util._extend(statusDoc, doc || {});
+
+          options.since = statusDoc.last_seq;
+
+          console.log(statusDoc);
+
+          // listen to changes
+          db.changes(options).on('data', queue);
+        });
       });
     }, noop),
 
     // parse changes feed
-    JSONStream.parse('results.*.doc'),
+    JSONStream.parse('results.*'),
 
     // run through magick
     magick(url, config)
+      // store status doc with last_seq after completed
+      .on('completed', function(data) {
+        statusDoc.last_seq = data.seq;
+        db.head(statusDoc._id, function(err, _, headers) {
+          if (!err && headers && headers.etag) {
+            statusDoc._rev = JSON.parse(headers.etag);
+          }
+          db.insert(statusDoc, statusDoc._id);
+        });
+      })
   );
 };
