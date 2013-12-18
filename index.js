@@ -12,13 +12,8 @@ var noop = function() {};
 
 
 /*jshint evil: true */
-// TODO: this should be sandboxed
 function evalFilter(code) {
-  var filter;
-
-  eval('filter = ' + code);
-
-  return filter;
+  return eval('(function() { return ' + code + '})()');
 }
 
 // Get configuration from design documents:
