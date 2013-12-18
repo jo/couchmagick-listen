@@ -93,6 +93,8 @@ module.exports = function couchmagick(url, options) {
     last_seq: 0
   };
 
+  var changesParserOptions = options.feed === 'continuous' ? null : 'results.*';
+
   return es.pipeline(
     // kick off
     es.readArray([1]),
@@ -126,7 +128,7 @@ module.exports = function couchmagick(url, options) {
     }, noop),
 
     // parse changes feed
-    JSONStream.parse('results.*'),
+    JSONStream.parse(changesParserOptions),
 
     // run through magick
     magick(url, config)
