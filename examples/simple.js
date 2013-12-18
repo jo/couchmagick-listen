@@ -7,7 +7,7 @@ if (!couch) {
 var es = require('event-stream');
 
 es.pipeline(
-  require('..')(couch),
+  require('..')(couch, { feed: 'continuous', timeout: 10 }),
   es.map(function(data, done) {
     done(null, data.response);
   }),

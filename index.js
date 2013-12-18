@@ -92,8 +92,23 @@ module.exports = function couchmagick(url, options) {
     _id: '_local/couchmagick',
     last_seq: 0
   };
+  var lastSeq;
 
   var changesParserOptions = options.feed === 'continuous' ? null : 'results.*';
+
+  function storeCheckpoint(seq) {
+    if (statusDoc.last_seq === seq) {
+      return;
+    }
+
+    statusDoc.last_seq = seq;
+    db.head(statusDoc._id, function(err, _, headers) {
+      if (!err && headers && headers.etag) {
+        statusDoc._rev = JSON.parse(headers.etag);
+      }
+      db.insert(statusDoc, statusDoc._id);
+    });
+  }
 
   return es.pipeline(
     // kick off
@@ -117,12 +132,23 @@ module.exports = function couchmagick(url, options) {
 
           options.since = statusDoc.last_seq;
 
-          // listen to changes
-          db.changes(options)
-            .on('data', queue)
-            .on('end', function() {
-              queue(null);
-            });
+          es.pipeline(
+            // listen to changes
+            db.changes(options)
+              .on('data', queue)
+              .on('end', function() {
+                queue(null);
+              }),
+
+            // parse last seq
+            JSONStream.parse('last_seq'),
+
+            // store lastSeq
+            es.map(function(data, done) {
+              lastSeq = data;
+              done(null, data);
+            })
+          );
         });
       });
     }, noop),
@@ -132,15 +158,15 @@ module.exports = function couchmagick(url, options) {
 
     // run through magick
     magick(url, config)
-      // store status doc with last_seq after completed
+      // store checkpoint after completed
       .on('completed', function(data) {
-        statusDoc.last_seq = data.seq;
-        db.head(statusDoc._id, function(err, _, headers) {
-          if (!err && headers && headers.etag) {
-            statusDoc._rev = JSON.parse(headers.etag);
-          }
-          db.insert(statusDoc, statusDoc._id);
-        });
+        storeCheckpoint(data.seq);
       })
-  );
+  )
+  // store checkpoint at the end
+  .on('end', function(data) {
+    if (lastSeq) {
+      storeCheckpoint(lastSeq);
+    }
+  });
 };
