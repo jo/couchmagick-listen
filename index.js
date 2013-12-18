@@ -98,7 +98,7 @@ module.exports = function couchmagick(url, options) {
     es.readArray([1]),
 
     // get config
-    es.through(function() {
+    es.through(function write() {
       var queue = this.queue;
 
       // get configuration
@@ -116,7 +116,11 @@ module.exports = function couchmagick(url, options) {
           options.since = statusDoc.last_seq;
 
           // listen to changes
-          db.changes(options).on('data', queue);
+          db.changes(options)
+            .on('data', queue)
+            .on('end', function() {
+              queue(null);
+            });
         });
       });
     }, noop),

@@ -8,6 +8,9 @@ var es = require('event-stream');
 
 es.pipeline(
   require('..')(couch),
+  es.map(function(data, done) {
+    done(null, data.response);
+  }),
   es.stringify(),
   process.stdout
 );
