@@ -41,11 +41,30 @@ function getConfig(db, done) {
       return done(null, null);
     }
 
+    // eval filters
+    resp.rows.forEach(function(row) {
+      // toplevel filter
+      if (row.doc.couchmagick.filter) {
+        row.doc.couchmagick.filter = evalFilter(row.doc.couchmagick.filter);
+      }
+
+      // version filters
+      Object.keys(row.doc.couchmagick.versions).forEach(function(version) {
+        if (!version.filter && row.doc.couchmagick.filter) {
+          return version.filter = row.doc.couchmagick.filter;
+        }
+
+        if (version.filter) {
+          version.filter = evalFilter(version.filter);
+        }
+      });
+    });
+
     var filters = resp.rows.map(function(row) {
         return row.doc.couchmagick.filter;
       }).filter(function(code) {
         return code;
-      }).map(evalFilter);
+      });
 
     var config = {
       // OR filters
@@ -64,14 +83,6 @@ function getConfig(db, done) {
         return memo;
       }, {})
     };
-
-    Object.keys(config.versions).forEach(function(name) {
-      var version = config.versions[name];
-
-      if (version.filter) {
-        version.filter = evalFilter(version.filter);
-      }
-    });
 
     done(null, config);
   });
