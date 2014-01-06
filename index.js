@@ -42,7 +42,7 @@ function getConfig(db, done) {
     }
 
     // eval filters
-    resp.rows.forEach(function(row) {
+    rows.forEach(function(row) {
       // toplevel filter
       if (row.doc.couchmagick.filter) {
         row.doc.couchmagick.filter = evalFilter(row.doc.couchmagick.filter);
@@ -62,7 +62,7 @@ function getConfig(db, done) {
       });
     });
 
-    var filters = resp.rows.map(function(row) {
+    var filters = rows.map(function(row) {
         return row.doc.couchmagick.filter;
       }).filter(function(code) {
         return code;
