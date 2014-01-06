@@ -49,13 +49,15 @@ function getConfig(db, done) {
       }
 
       // version filters
-      Object.keys(row.doc.couchmagick.versions).forEach(function(version) {
-        if (!version.filter && row.doc.couchmagick.filter) {
-          return version.filter = row.doc.couchmagick.filter;
-        }
+      Object.keys(row.doc.couchmagick.versions).forEach(function(name) {
+        var version = row.doc.couchmagick.versions[name];
 
         if (version.filter) {
           version.filter = evalFilter(version.filter);
+        }
+
+        if (!version.filter && row.doc.couchmagick.filter) {
+          version.filter = row.doc.couchmagick.filter;
         }
       });
     });
