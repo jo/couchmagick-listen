@@ -48,9 +48,10 @@ function getConfig(db, done) {
       }).map(evalFilter);
 
     var config = {
+      // OR filters
       filter: function(doc) {
-        return !filters.filter(function(filter) {
-          return !filter(doc);
+        return filters.filter(function(filter) {
+          return filter(doc);
         }).length;
       },
       versions: rows.reduce(function(memo, row) {
