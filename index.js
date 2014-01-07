@@ -33,58 +33,39 @@ function getConfig(db, done) {
       return done(null, null);
     }
 
-    var rows = resp.rows.filter(function(row) {
-      return typeof row.doc.couchmagick === 'object';
-    });
+    var docs = resp.rows
+      .filter(function(row) { return typeof row.doc.couchmagick === 'object'; })
+      .map(function(row) { return row.doc; });
 
-    if (!rows.length) {
+    if (!docs.length) {
       return done(null, null);
     }
 
+
     // eval filters
-    rows.forEach(function(row) {
+    docs.forEach(function(doc) {
       // toplevel filter
-      if (row.doc.couchmagick.filter) {
-        row.doc.couchmagick.filter = evalFilter(row.doc.couchmagick.filter);
+      if (doc.couchmagick.filter) {
+        doc.couchmagick.filter = evalFilter(doc.couchmagick.filter);
       }
 
       // version filters
-      Object.keys(row.doc.couchmagick.versions).forEach(function(name) {
-        var version = row.doc.couchmagick.versions[name];
+      Object.keys(doc.couchmagick.versions).forEach(function(name) {
+        var version = doc.couchmagick.versions[name];
 
         if (version.filter) {
           version.filter = evalFilter(version.filter);
         }
-
-        if (!version.filter && row.doc.couchmagick.filter) {
-          version.filter = row.doc.couchmagick.filter;
-        }
       });
     });
 
-    var filters = rows.map(function(row) {
-        return row.doc.couchmagick.filter;
-      }).filter(function(code) {
-        return code;
-      });
 
-    var config = {
-      // OR filters
-      filter: function(doc) {
-        return filters.filter(function(filter) {
-          return filter(doc);
-        }).length;
-      },
-      versions: rows.reduce(function(memo, row) {
-        if (row.doc.couchmagick.versions) {
-          Object.keys(row.doc.couchmagick.versions).forEach(function(version) {
-            memo[version] = row.doc.couchmagick.versions[version];
-          });
-        }
+    var config = docs.reduce(function(memo, doc) {
+      memo[doc._id] = doc.couchmagick;
 
-        return memo;
-      }, {})
-    };
+      return memo;
+    }, {});
+
 
     done(null, config);
   });
@@ -93,10 +74,10 @@ function getConfig(db, done) {
 
 module.exports = function couchmagick(url, options) {
   options = options || {};
-  options.include_docs = true;
+  options.concurrency  = options.concurrency || 1;
 
-  var db = nano(url);
   var config = {};
+  var db = nano(url);
   var statusDoc = {
     _id: '_local/couchmagick',
     last_seq: 0
@@ -104,6 +85,20 @@ module.exports = function couchmagick(url, options) {
   var lastSeq;
 
   var changesParserOptions = options.feed === 'continuous' ? null : 'results.*';
+
+  var changesOptions = {
+    include_docs: true
+  }
+  if (options.feed) {
+    changesOptions.feed = options.feed;
+  }
+  if (options.limit) {
+    changesOptions.limit = options.limit;
+  }
+  if (options.timeout) {
+    changesOptions.timeout = options.timeout;
+  }
+
 
   function storeCheckpoint(seq) {
     if (statusDoc.last_seq === seq) {
@@ -139,11 +134,11 @@ module.exports = function couchmagick(url, options) {
         db.get(statusDoc._id, function(err, doc) {
           util._extend(statusDoc, doc || {});
 
-          options.since = statusDoc.last_seq;
+          changesOptions.since = statusDoc.last_seq;
 
           es.pipeline(
             // listen to changes
-            db.changes(options)
+            db.changes(changesOptions)
               .on('data', queue)
               .on('end', function() {
                 queue(null);
@@ -166,7 +161,7 @@ module.exports = function couchmagick(url, options) {
     JSONStream.parse(changesParserOptions),
 
     // run through magick
-    magick(url, config)
+    magick(url, config, options)
       // store checkpoint after completed
       .on('completed', function(data) {
         storeCheckpoint(data.seq);

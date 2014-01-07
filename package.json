@@ -1,6 +1,6 @@
 {
   "name": "couchmagick-listen",
-  "version": "1.4.3",
+  "version": "1.5.0",
   "description": "Stream changes to couchmagick-stream.",
   "main": "index.js",
   "scripts": {
@@ -28,7 +28,7 @@
   "dependencies": {
     "nano": "~4.2.1",
     "event-stream": "~3.0.20",
-    "couchmagick-stream": "~1.3.2",
+    "couchmagick-stream": "~1.4.0",
     "JSONStream": "~0.7.1"
   }
 }

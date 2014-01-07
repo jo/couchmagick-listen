@@ -42,9 +42,14 @@ require('couchmagick-listen')('http://localhost:5984/mydb')
 
 Configuration
 -------------
-couchmagick-listen accepts an options object as second parameter, which will get
-passed to
-[nano's changes](https://github.com/dscape/nano#nanodbchangesname-params-callback).
+couchmagick-listen accepts an options object as second parameter, which accepts
+the following parameters:
+
+* `concurrency` - Number of simultanous processes
+* `feed` - format of the changes feed
+* `limit` - limit for changes feed
+* `timeout` - timeout for changes feed
+
 
 Examples
 --------
