@@ -46,6 +46,7 @@ couchmagick-listen accepts an options object as second parameter, which accepts
 the following parameters:
 
 * `concurrency` - Number of simultanous processes
+* `convert_process_timeout` - Timeout for convert process
 * `feed` - format of the changes feed
 * `limit` - limit for changes feed
 * `changes_feed_timeout` - timeout for changes feed
