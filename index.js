@@ -87,7 +87,8 @@ module.exports = function couchmagick(url, options) {
 
   var changesOptions = {
     include_docs: true
-  }
+  };
+
   if (options.feed) {
     changesOptions.feed = options.feed;
   }
@@ -167,7 +168,7 @@ module.exports = function couchmagick(url, options) {
       })
   )
   // store checkpoint at the end
-  .on('end', function(data) {
+  .on('end', function() {
     if (lastSeq) {
       storeCheckpoint(lastSeq);
     }
