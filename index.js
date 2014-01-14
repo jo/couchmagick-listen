@@ -74,7 +74,6 @@ function getConfig(db, done) {
 
 module.exports = function couchmagick(url, options) {
   options = options || {};
-  options.concurrency  = options.concurrency || 1;
 
   var config = {};
   var db = nano(url);
@@ -95,8 +94,8 @@ module.exports = function couchmagick(url, options) {
   if (options.limit) {
     changesOptions.limit = options.limit;
   }
-  if (options.timeout) {
-    changesOptions.timeout = options.timeout;
+  if (options.changes_feed_timeout) {
+    changesOptions.timeout = options.changes_feed_timeout;
   }
 
 

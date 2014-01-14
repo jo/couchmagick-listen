@@ -48,7 +48,7 @@ the following parameters:
 * `concurrency` - Number of simultanous processes
 * `feed` - format of the changes feed
 * `limit` - limit for changes feed
-* `timeout` - timeout for changes feed
+* `changes_feed_timeout` - timeout for changes feed
 
 
 Examples

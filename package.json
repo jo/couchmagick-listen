@@ -1,6 +1,6 @@
 {
   "name": "couchmagick-listen",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "Stream changes to couchmagick-stream.",
   "main": "index.js",
   "scripts": {
