@@ -2,6 +2,9 @@ couchmagick-listen
 ============
 Stream changes to couchmagick-stream.
 
+# Deprication Warning
+This is depricated in favor of [couchmagick](https://github.com/jo/couchmagick).
+
 Usage
 -----
 Create a design document with a couchmagick configuration:
